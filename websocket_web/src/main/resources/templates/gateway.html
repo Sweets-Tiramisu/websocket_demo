@@ -114,7 +114,7 @@
             <p>通过网关连接WebSocket服务</p>
         </div>
         <div id="status" class="status disconnected">未连接</div>
-        <div id="connectionInfo" class="connection-info">连接地址: http://localhost:2801/api/ws</div>
+        <div id="connectionInfo" class="connection-info">连接地址: http://localhost:2801/gateway_api/ws</div>
         <div class="input-group">
             <input type="text" id="resourceId" placeholder="输入资源ID">
             <button id="connectBtn" onclick="connect()">连接</button>
@@ -182,7 +182,7 @@
                 window.history.pushState({path: newUrl}, '', newUrl);
             }
 
-            const socket = new SockJS(gatewayUrl + '/api/ws');
+            const socket = new SockJS(gatewayUrl + '/gateway_api/ws');
             stompClient = Stomp.over(socket);
             
             // 禁用STOMP调试

@@ -7,16 +7,12 @@ spring:
   cloud:
     gateway:
       routes:
-        - id: websocket_route
+        - id: gateway_api_route
           uri: http://localhost:8080
           predicates:
-            - Path=/api/ws/**
+            - Path=/gateway_api/**
           filters:
-            - RewritePath=/api/ws/(?<segment>.*), /ws/$\{segment}
-        - id: websocket_web_route
-          uri: http://localhost:8080
-          predicates:
-            - Path=/websocket/**, /gateway/**
+            - RewritePath=/gateway_api/(?<segment>.*), /$\{segment}
       httpclient:
         websocket:
           max-frame-payload-length: 65536
