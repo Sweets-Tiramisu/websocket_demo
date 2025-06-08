@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>WebSocket Demo</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/sockjs-client/1.5.0/sockjs.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/stomp.js/2.3.3/stomp.min.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .container {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        .input-group {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+        input {
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        button {
+            padding: 8px 16px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        button:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+        }
+        #messages {
+            border: 1px solid #ccc;
+            padding: 10px;
+            height: 300px;
+            overflow-y: auto;
+            border-radius: 4px;
+        }
+        .status {
+            padding: 10px;
+            border-radius: 4px;
+            margin-bottom: 10px;
+        }
+        .connected {
+            background-color: #dff0d8;
+            color: #3c763d;
+            border: 1px solid #d6e9c6;
+        }
+        .disconnected {
+            background-color: #f2dede;
+            color: #a94442;
+            border: 1px solid #ebccd1;
+        }
+        .message {
+            margin: 5px 0;
+            padding: 5px;
+            border-radius: 4px;
+        }
+        .message.system {
+            background-color: #f8f9fa;
+            color: #6c757d;
+        }
+        .connection-info {
+            padding: 10px;
+            background-color: #e9ecef;
+            border-radius: 4px;
+            margin-bottom: 10px;
+            font-family: monospace;
+            color: #495057;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>WebSocket Demo</h1>
+        <div id="status" class="status disconnected">未连接</div>
+        <div id="connectionInfo" class="connection-info">连接地址: /ws</div>
+        <div class="input-group">
+            <input type="text" id="resourceId" placeholder="输入资源ID">
+            <button id="connectBtn" onclick="connect()">连接</button>
+            <button id="disconnectBtn" onclick="disconnect()" disabled>断开</button>
+        </div>
+        <div id="messages"></div>
+    </div>
+
+    <script>
+        let stompClient = null;
+        let resourceId = null;
+
+        function updateStatus(connected) {
+            const statusDiv = document.getElementById('status');
+            const connectBtn = document.getElementById('connectBtn');
+            const disconnectBtn = document.getElementById('disconnectBtn');
+            
+            if (connected) {
+                statusDiv.className = 'status connected';
+                statusDiv.textContent = '已连接到资源: ' + resourceId;
+                connectBtn.disabled = true;
+                disconnectBtn.disabled = false;
+            } else {
+                statusDiv.className = 'status disconnected';
+                statusDiv.textContent = '未连接';
+                connectBtn.disabled = false;
+                disconnectBtn.disabled = true;
+            }
+        }
+
+        function showMessage(message, isSystem = false) {
+            const messagesDiv = document.getElementById('messages');
+            const messageElement = document.createElement('div');
+            messageElement.className = 'message' + (isSystem ? ' system' : '');
+            messageElement.textContent = message;
+            messagesDiv.appendChild(messageElement);
+            messagesDiv.scrollTop = messagesDiv.scrollHeight;
+        }
+
+        function getResourceIdFromUrl() {
+            const pathParts = window.location.pathname.split('/');
+            return pathParts[pathParts.length - 1];
+        }
+
+        // 页面加载时检查URL中的资源ID
+        window.onload = function() {
+            const urlResourceId = getResourceIdFromUrl();
+            if (urlResourceId && urlResourceId !== 'websocket') {
+                document.getElementById('resourceId').value = urlResourceId;
+                connect();
+            }
+        }
+
+        function connect() {
+            resourceId = document.getElementById('resourceId').value;
+            if (!resourceId) {
+                alert('请输入资源ID');
+                return;
+            }
+
+            // 更新URL
+            if (window.history.pushState) {
+                const newUrl = '/websocket/' + resourceId;
+                window.history.pushState({path: newUrl}, '', newUrl);
+            }
+
+            const socket = new SockJS('/ws');
+            stompClient = Stomp.over(socket);
+            
+            // 禁用STOMP调试
+            stompClient.debug = null;
+            
+            stompClient.connect({}, 
+                function(frame) {
+                    console.log('Connected: ' + frame);
+                    updateStatus(true);
+                    showMessage('已连接到WebSocket服务器', true);
+                    
+                    stompClient.subscribe('/topic/' + resourceId, function(message) {
+                        showMessage(message.body);
+                    });
+                },
+                function(error) {
+                    console.error('Connection error:', error);
+                    updateStatus(false);
+                    showMessage('连接错误: ' + error, true);
+                }
+            );
+        }
+
+        function disconnect() {
+            if (stompClient !== null) {
+                stompClient.disconnect(function() {
+                    console.log('Disconnected');
+                    updateStatus(false);
+                    showMessage('已断开连接', true);
+                });
+                stompClient = null;
+            }
+        }
+
+        window.onbeforeunload = function() {
+            disconnect();
+        };
+    </script>
+</body>
+</html> 

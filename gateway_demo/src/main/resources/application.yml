@@ -1,0 +1,31 @@
+server:
+  port: 2801
+
+spring:
+  application:
+    name: gateway-service
+  cloud:
+    gateway:
+      routes:
+        - id: websocket_route
+          uri: http://localhost:8080
+          predicates:
+            - Path=/api/ws/**
+          filters:
+            - RewritePath=/api/ws/(?<segment>.*), /ws/$\{segment}
+        - id: websocket_web_route
+          uri: http://localhost:8080
+          predicates:
+            - Path=/websocket/**, /gateway/**
+      httpclient:
+        websocket:
+          max-frame-payload-length: 65536
+      globalcors:
+        cors-configurations:
+          '[/**]':
+            allowedOriginPatterns: "*"
+            allowedMethods: "*"
+            allowedHeaders: "*"
+            allowCredentials: true
+            exposedHeaders: "*"
+            maxAge: 3600

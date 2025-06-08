@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>WebSocket Gateway Demo</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/sockjs-client/1.5.0/sockjs.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/stomp.js/2.3.3/stomp.min.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 20px;
+            color: #333;
+        }
+        .input-group {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        input {
+            flex: 1;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        button {
+            padding: 10px 20px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: background-color 0.3s;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        button:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+        }
+        #messages {
+            border: 1px solid #ddd;
+            padding: 15px;
+            height: 300px;
+            overflow-y: auto;
+            border-radius: 4px;
+            background-color: #fafafa;
+        }
+        .status {
+            padding: 10px;
+            border-radius: 4px;
+            margin-bottom: 15px;
+            text-align: center;
+            font-weight: bold;
+        }
+        .connected {
+            background-color: #dff0d8;
+            color: #3c763d;
+            border: 1px solid #d6e9c6;
+        }
+        .disconnected {
+            background-color: #f2dede;
+            color: #a94442;
+            border: 1px solid #ebccd1;
+        }
+        .message {
+            margin: 8px 0;
+            padding: 8px;
+            border-radius: 4px;
+            background-color: white;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+        }
+        .message.system {
+            background-color: #f8f9fa;
+            color: #6c757d;
+        }
+        .message.received {
+            background-color: #e3f2fd;
+            color: #0d47a1;
+        }
+        .message.sent {
+            background-color: #e8f5e9;
+            color: #1b5e20;
+        }
+        .connection-info {
+            padding: 10px;
+            background-color: #e9ecef;
+            border-radius: 4px;
+            margin-bottom: 15px;
+            font-family: monospace;
+            color: #495057;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>WebSocket Gateway Demo</h1>
+            <p>通过网关连接WebSocket服务</p>
+        </div>
+        <div id="status" class="status disconnected">未连接</div>
+        <div id="connectionInfo" class="connection-info">连接地址: http://localhost:2801/api/ws</div>
+        <div class="input-group">
+            <input type="text" id="resourceId" placeholder="输入资源ID">
+            <button id="connectBtn" onclick="connect()">连接</button>
+            <button id="disconnectBtn" onclick="disconnect()" disabled>断开</button>
+        </div>
+        <div id="messages"></div>
+    </div>
+
+    <script>
+        let stompClient = null;
+        let resourceId = null;
+        const gatewayUrl = 'http://localhost:2801';
+
+        function updateStatus(connected) {
+            const statusDiv = document.getElementById('status');
+            const connectBtn = document.getElementById('connectBtn');
+            const disconnectBtn = document.getElementById('disconnectBtn');
+            
+            if (connected) {
+                statusDiv.className = 'status connected';
+                statusDiv.textContent = '已连接到资源: ' + resourceId;
+                connectBtn.disabled = true;
+                disconnectBtn.disabled = false;
+            } else {
+                statusDiv.className = 'status disconnected';
+                statusDiv.textContent = '未连接';
+                connectBtn.disabled = false;
+                disconnectBtn.disabled = true;
+            }
+        }
+
+        function showMessage(message, type = 'system') {
+            const messagesDiv = document.getElementById('messages');
+            const messageElement = document.createElement('div');
+            messageElement.className = 'message ' + type;
+            messageElement.textContent = message;
+            messagesDiv.appendChild(messageElement);
+            messagesDiv.scrollTop = messagesDiv.scrollHeight;
+        }
+
+        function getResourceIdFromUrl() {
+            const pathParts = window.location.pathname.split('/');
+            return pathParts[pathParts.length - 1];
+        }
+
+        // 页面加载时检查URL中的资源ID
+        window.onload = function() {
+            const urlResourceId = getResourceIdFromUrl();
+            if (urlResourceId && urlResourceId !== 'gateway') {
+                document.getElementById('resourceId').value = urlResourceId;
+                connect();
+            }
+        }
+
+        function connect() {
+            resourceId = document.getElementById('resourceId').value;
+            if (!resourceId) {
+                alert('请输入资源ID');
+                return;
+            }
+
+            // 更新URL
+            if (window.history.pushState) {
+                const newUrl = '/gateway/' + resourceId;
+                window.history.pushState({path: newUrl}, '', newUrl);
+            }
+
+            const socket = new SockJS(gatewayUrl + '/api/ws');
+            stompClient = Stomp.over(socket);
+            
+            // 禁用STOMP调试
+            stompClient.debug = null;
+            
+            // 添加连接选项
+            const connectHeaders = {
+                'heart-beat': '10000,10000'
+            };
+            
+            stompClient.connect(connectHeaders, 
+                function(frame) {
+                    console.log('Connected: ' + frame);
+                    updateStatus(true);
+                    showMessage('已连接到WebSocket服务器', 'system');
+                    
+                    stompClient.subscribe('/topic/' + resourceId, function(message) {
+                        showMessage('收到消息: ' + message.body, 'received');
+                    });
+                },
+                function(error) {
+                    console.error('Connection error:', error);
+                    updateStatus(false);
+                    showMessage('连接错误: ' + (error.headers ? error.headers.message : error), 'system');
+                    
+                    // 尝试重新连接
+                    setTimeout(function() {
+                        console.log('尝试重新连接...');
+                        connect();
+                    }, 5000);
+                }
+            );
+        }
+
+        function disconnect() {
+            if (stompClient !== null) {
+                stompClient.disconnect(function() {
+                    console.log('Disconnected');
+                    updateStatus(false);
+                    showMessage('已断开连接', 'system');
+                });
+                stompClient = null;
+            }
+        }
+
+        window.onbeforeunload = function() {
+            disconnect();
+        };
+    </script>
+</body>
+</html> 
