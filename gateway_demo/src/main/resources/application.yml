@@ -6,19 +6,19 @@ spring:
     name: gateway-service
   cloud:
     gateway:
-      routes:
-        - id: gateway_api_stomp_route
-          uri: http://localhost:8080
-          predicates:
-            - Path=/gateway_stomp_api/**
-          filters:
-            - RewritePath=/gateway_stomp_api/(?<segment>.*), /$\{segment}
-        - id: gateway_ws_api_route
-          uri: ws://localhost:8081
-          predicates:
-            - Path=/gateway_ws_api/**
-          filters:
-            - RewritePath=/gateway_ws_api/(?<segment>.*), /$\{segment}
+      # routes:
+      #   - id: gateway_api_stomp_route
+      #     uri: http://localhost:8080
+      #     predicates:
+      #       - Path=/gateway_stomp_api/**
+      #     filters:
+      #       - RewritePath=/gateway_stomp_api/(?<segment>.*), /$\{segment}
+      #   - id: gateway_ws_api_route
+      #     uri: ws://localhost:8081
+      #     predicates:
+      #       - Path=/gateway_ws_api/**
+      #     filters:
+      #       - RewritePath=/gateway_ws_api/(?<segment>.*), /$\{segment}
       httpclient:
         websocket:
           max-frame-payload-length: 65536
