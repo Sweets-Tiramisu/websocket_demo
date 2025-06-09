@@ -15,4 +15,14 @@ public class WebSocketPageController {
     public String websocketPageWithId() {
         return "index";
     }
+
+    @GetMapping("/gateway")
+    public String gatewayPage() {
+        return "gateway";
+    }
+    
+    @GetMapping("/gateway/{resourceId}")
+    public String gatewayPageWithId() {
+        return "gateway";
+    }
 } 

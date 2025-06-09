@@ -13,6 +13,12 @@ spring:
             - Path=/gateway_api/**
           filters:
             - RewritePath=/gateway_api/(?<segment>.*), /$\{segment}
+        - id: gateway_ws_api_route
+          uri: ws://localhost:8081
+          predicates:
+            - Path=/gateway_ws_api/**
+          filters:
+            - RewritePath=/gateway_ws_api/(?<segment>.*), /$\{segment}
       httpclient:
         websocket:
           max-frame-payload-length: 65536
