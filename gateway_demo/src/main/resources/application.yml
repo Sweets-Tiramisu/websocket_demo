@@ -7,12 +7,12 @@ spring:
   cloud:
     gateway:
       routes:
-        - id: gateway_api_route
+        - id: gateway_api_stomp_route
           uri: http://localhost:8080
           predicates:
-            - Path=/gateway_api/**
+            - Path=/gateway_stomp_api/**
           filters:
-            - RewritePath=/gateway_api/(?<segment>.*), /$\{segment}
+            - RewritePath=/gateway_stomp_api/(?<segment>.*), /$\{segment}
         - id: gateway_ws_api_route
           uri: ws://localhost:8081
           predicates:

@@ -112,7 +112,7 @@
             <p>通过网关连接WebSocket服务</p>
         </div>
         <div id="status" class="status disconnected">未连接</div>
-        <div id="connectionInfo" class="connection-info">连接地址: ws://localhost:2801/gateway_ws_api/ws</div>
+        <div id="connectionInfo" class="connection-info">连接地址: <span id="wsUrl"></span></div>
         <div class="input-group">
             <input type="text" id="resourceId" placeholder="输入资源ID">
             <button id="connectBtn" onclick="connect()">连接</button>
@@ -124,7 +124,12 @@
     <script>
         let ws = null;
         let resourceId = null;
-        const gatewayUrl = 'ws://localhost:2801';
+        const gatewayUrl = 'ws://127.0.0.1:2801';
+        const wsEndpoint = '/gateway_ws_api/ws';
+        const fullWsUrl = gatewayUrl + wsEndpoint;
+
+        // 更新连接信息显示
+        document.getElementById('wsUrl').textContent = fullWsUrl;
 
         function updateStatus(connected) {
             const statusDiv = document.getElementById('status');
@@ -180,7 +185,7 @@
                 window.history.pushState({path: newUrl}, '', newUrl);
             }
 
-            const wsUrl = `${gatewayUrl}/gateway_ws_api/ws?resourceId=${resourceId}`;
+            const wsUrl = `${fullWsUrl}?resourceId=${resourceId}`;
             ws = new WebSocket(wsUrl);
 
             ws.onopen = function() {
