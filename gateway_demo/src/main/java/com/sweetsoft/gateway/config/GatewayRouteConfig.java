@@ -4,6 +4,7 @@ import cn.hutool.json.JSONArray;
 import cn.hutool.json.JSONObject;
 import cn.hutool.json.JSONUtil;
 import com.sweetsoft.gateway.vo.ApiGatewayRoute;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.cloud.gateway.route.RouteLocator;
 import org.springframework.cloud.gateway.route.builder.RouteLocatorBuilder;
 import org.springframework.context.annotation.Bean;
@@ -11,7 +12,7 @@ import org.springframework.context.annotation.Configuration;
 
 import java.util.ArrayList;
 import java.util.List;
-
+@Slf4j
 @Configuration
 public class GatewayRouteConfig {
 
@@ -50,7 +51,7 @@ public class GatewayRouteConfig {
                 });
             }
         }catch (Exception e){
-            e.printStackTrace();
+            log.error("初始化路由失败: {}", e.getMessage());
         }
         return routeBuilder.build();
     }
