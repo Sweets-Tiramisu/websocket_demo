@@ -21,7 +21,7 @@ spring:
       #       - RewritePath=/gateway_ws_api/(?<segment>.*), /$\{segment}
       httpclient:
         websocket:
-          max-frame-payload-length: 65536
+          max-frame-payload-length: 655360
       globalcors:
         cors-configurations:
           '[/**]':
