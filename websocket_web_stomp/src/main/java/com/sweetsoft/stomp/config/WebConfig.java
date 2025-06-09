@@ -1,4 +1,4 @@
-package com.sweetsoft.websocket_web.config;
+package com.sweetsoft.stomp.config;
 
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;

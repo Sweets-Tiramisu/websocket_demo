@@ -1,4 +1,4 @@
-package com.sweetsoft.websocket_web.handler;
+package com.sweetsoft.stomp.handler;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.messaging.handler.annotation.MessageMapping;

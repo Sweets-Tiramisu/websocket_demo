@@ -23,7 +23,8 @@
     </developers>
     <modules>
         <module>gateway_demo</module>
-        <module>websocket_web</module>
+        <module>websocket_web_stomp</module>
+        <module>websocket_native</module>
     </modules>
     <scm>
         <connection/>

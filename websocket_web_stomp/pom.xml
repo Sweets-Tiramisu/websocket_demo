@@ -9,10 +9,10 @@
         <relativePath/>
     </parent>
     <groupId>com.sweetsoft</groupId>
-    <artifactId>websocket_web</artifactId>
+    <artifactId>websocket_web_stomp</artifactId>
     <version>0.0.1-SNAPSHOT</version>
-    <name>websocket_web</name>
-    <description>websocket_web</description>
+    <name>websocket_web_stomp</name>
+    <description>websocket_web_stomp</description>
     <properties>
         <java.version>21</java.version>
         <maven.compiler.source>21</maven.compiler.source>
