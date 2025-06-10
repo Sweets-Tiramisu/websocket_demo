@@ -17,7 +17,7 @@ public class WebSocketWebApplication {
         System.out.println("WebSocket Demo 已启动!");
         System.out.println("本地访问地址: http://localhost:" + port);
         System.out.println("WebSocket页面: http://localhost:" + port + "/websocket/test123");
-        System.out.println("网关WebSocket页面: http://localhost:" + port + "/websocket/gateway/test123");
+        System.out.println("网关WebSocket页面: http://localhost:" + port + "/gateway/test123");
         System.out.println("=================================================\n");
     }
 } 
